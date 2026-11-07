@@ -1,1 +1,304 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAD Studio - 2D Platformer Alpha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-200 select-none">
+
+    <!-- Header Navigation -->
+    <header class="h-14 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-30 px-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+                <i class="fa-solid fa-bars-staggered"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm">
+                    W
+                </div>
+                <span class="font-semibold tracking-tight text-sm md:text-base">WAD Studio</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">v3.3 OpenSource</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:block"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="absolute md:relative inset-y-0 left-0 w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col transition-all duration-300 ease-in-out z-20 -translate-x-full md:translate-x-0">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Proyecto Open Source</h2>
+            </div>
+            <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+                <a href="#guia-section" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm transition-colors">
+                    <i class="fa-solid fa-book-open w-4"></i>
+                    <span>Guía & Comunidad</span>
+                </a>
+                <a href="#juego-section" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-500 font-medium text-sm">
+                    <i class="fa-solid fa-gamepad w-4"></i>
+                    <span>Plataformas 2D (Alfa)</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+                Creadores: <span class="text-emerald-500 font-medium">Jesu & Team</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Canvas -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+            <div class="max-w-2xl w-full flex flex-col gap-6">
+                
+                <!-- GUÍA -->
+                <section id="guia-section" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-600 flex items-center justify-center">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Sobre WAD Platformer</h3>
+                    </div>
+
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                        Un proyecto de plataformas 2D diseñado desde dispositivos móviles con miras a convertirse en un juego independiente global. Todo el código fuente es abierto bajo la Licencia MIT.
+                    </p>
+                </section>
+
+                <!-- JUEGO DE PLATAFORMAS 2D -->
+                <section id="juego-section" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg p-5 flex flex-col items-center">
+                    <div class="flex justify-between w-full mb-3 px-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <span>🍄 SUPER PLATFORMER 2D</span>
+                        <span>Puntuación: <span id="score" class="font-mono text-brand-600">0</span></span>
+                    </div>
+
+                    <div class="relative w-full aspect-[2/1] bg-sky-900 rounded-xl overflow-hidden shadow-inner border border-slate-700" id="game-container">
+                        <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+                        
+                        <div id="game-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                            <h3 id="overlay-title" class="text-xl font-bold text-white mb-2">Plataformas 2D Alfa</h3>
+                            <p id="overlay-desc" class="text-xs text-slate-400 max-w-xs mb-4">Usa los controles táctiles para moverte y salta sobre los enemigos.</p>
+                            
+                            <div class="flex gap-3 mb-2">
+                                <button onclick="startGame(event)" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl shadow-md transition-all text-xs flex items-center gap-2">
+                                    <i class="fa-solid fa-play"></i>
+                                    <span>Iniciar Partida</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controles Virtuales -->
+                    <div class="flex justify-between w-full mt-4 px-2">
+                        <div class="flex gap-2">
+                            <button ontouchstart="moveLeft()" onmousedown="moveLeft()" ontouchend="stopMove()" onmouseup="stopMove()" class="w-12 h-12 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl font-bold text-slate-700 dark:text-slate-200 shadow flex items-center justify-center active:scale-95">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button ontouchstart="moveRight()" onmousedown="moveRight()" ontouchend="stopMove()" onmouseup="stopMove()" class="w-12 h-12 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl font-bold text-slate-700 dark:text-slate-200 shadow flex items-center justify-center active:scale-95">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <button ontouchstart="jump()" onmousedown="jump()" class="px-6 h-12 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow flex items-center justify-center gap-2 active:scale-95 text-xs">
+                            <i class="fa-solid fa-angles-up"></i> SALTAR
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('-translate-x-full'); });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => { document.documentElement.classList.toggle('dark'); });
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const overlay = document.getElementById('game-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayDesc = document.getElementById('overlay-desc');
+
+        canvas.width = 600;
+        canvas.height = 300;
+
+        let gameRunning = false;
+        let score = 0;
+        let animationId;
+
+        let player = { x: 50, y: 200, width: 24, height: 32, vx: 0, vy: 0, speed: 3, gravity: 0.6, jumpPower: -10, isJumping: false };
+        let enemies = [
+            { x: 300, y: 218, width: 22, height: 22, vx: -1.2, alive: true },
+            { x: 500, y: 218, width: 22, height: 22, vx: -1.5, alive: true }
+        ];
+        let platforms = [
+            { x: 0, y: 240, width: 600, height: 60 },
+            { x: 200, y: 160, width: 120, height: 16 },
+            { x: 400, y: 110, width: 100, height: 16 }
+        ];
+
+        function resetGame() {
+            score = 0;
+            player.x = 50; player.y = 150; player.vx = 0; player.vy = 0;
+            enemies = [
+                { x: 300, y: 218, width: 22, height: 22, vx: -1.2, alive: true },
+                { x: 500, y: 218, width: 22, height: 22, vx: -1.5, alive: true }
+            ];
+        }
+
+        function startGame(e) {
+            if(e) e.stopPropagation();
+            resetGame();
+            gameRunning = true;
+            overlay.classList.add('hidden');
+            loop();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            overlayTitle.innerText = "¡PARTIDA TERMINADA!";
+            overlayDesc.innerText = `Puntuación obtenida: ${score}`;
+            overlay.classList.remove('hidden');
+        }
+
+        function moveLeft() { player.vx = -player.speed; }
+        function moveRight() { player.vx = player.speed; }
+        function stopMove() { player.vx = 0; }
+
+        function jump() {
+            if (!gameRunning) { startGame(); return; }
+            if (!player.isJumping) { player.vy = player.jumpPower; player.isJumping = true; }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft();
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight();
+            if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (['ArrowLeft', 'KeyA', 'ArrowRight', 'KeyD'].includes(e.code)) stopMove();
+        });
+
+        function update() {
+            player.x += player.vx;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+
+            player.vy += player.gravity;
+            player.y += player.vy;
+
+            player.isJumping = true;
+            platforms.forEach(p => {
+                if (
+                    player.x < p.x + p.width &&
+                    player.x + player.width > p.x &&
+                    player.y + player.height >= p.y &&
+                    player.y + player.height - player.vy <= p.y
+                ) {
+                    player.y = p.y - player.height;
+                    player.vy = 0;
+                    player.isJumping = false;
+                }
+            });
+
+            enemies.forEach(en => {
+                if (!en.alive) return;
+                en.x += en.vx;
+                if (en.x < 50 || en.x > canvas.width - 50) en.vx *= -1;
+
+                if (
+                    player.x < en.x + en.width &&
+                    player.x + player.width > en.x &&
+                    player.y < en.y + en.height &&
+                    player.y + player.height > en.y
+                ) {
+                    if (player.vy > 0 && player.y + player.height - player.vy <= en.y + 10) {
+                        en.alive = false;
+                        player.vy = -7;
+                        score += 100;
+                    } else {
+                        gameOver();
+                    }
+                }
+            });
+
+            if (player.y > canvas.height) gameOver();
+        }
+
+        function draw() {
+            let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, '#0284c7');
+            grad.addColorStop(1, '#bae6fd');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            platforms.forEach(p => {
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x, p.y, p.width, p.height);
+            });
+
+            enemies.forEach(en => {
+                if (!en.alive) return;
+                ctx.fillStyle = '#dc2626';
+                ctx.fillRect(en.x, en.y, en.width, en.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(en.x + 4, en.y + 4, 4, 4);
+                ctx.fillRect(en.x + 14, en.y + 4, 4, 4);
+            });
+
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(player.x + 4, player.y, 16, 10);
+
+            scoreElement.innerText = score;
+        }
+
+        function loop() {
+            if (!gameRunning) return;
+            update();
+            draw();
+            animationId = requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
 
